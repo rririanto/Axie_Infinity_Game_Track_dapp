@@ -11,19 +11,14 @@ def hello_world():
 
 
 def collect_ronin():
-    scholars_ronin_id = []
-    users_ronin_id = []
     file = open('scholar.json',)
     data = json.load(file)
     scholars = data['scholars']
-    for scholar in scholars:
-        scholars_ronin_id.append(scholar['scholar_ronin'])
-
+    scholars_ronin_id = [scholar['scholar_ronin'] for scholar in scholars]
     file = open('data.json',)
     data = json.load(file)
     users = data['events']
-    for user in users:
-        users_ronin_id.append(user['user_ronin_id'])
+    users_ronin_id = [user['user_ronin_id'] for user in users]
     # print("scholars_ronin_id",scholars_ronin_id)
     # print("users_ronin_id",users_ronin_id)
 
@@ -32,18 +27,18 @@ global name
 @app.route("/investorsighnup", methods=['GET','POST'])
 def investorsighnup():
     global user_ronin_id
-    user_ronin_id = ""
     if request.method == 'POST':
         email = request.form['email']
         name = request.form['name']
         password = request.form['password']
         ronin_id = request.form['currency']
-        
+
         data_dict = {"user_name":name,
                     "user_email":email,
                     "user_password":password,
                     "user_ronin_id":ronin_id}
 
+        user_ronin_id = ""
         user_ronin_id+=ronin_id
 
         with open('data.json','r+') as file:
@@ -56,7 +51,7 @@ def investorsighnup():
         print(ronin_id)
 
         return render_template('investorsighnup.html',d = data_dict )
-    
+
     return render_template('investorsighnup.html')
 
 
@@ -64,15 +59,13 @@ def slp_chart_data_fun():
     slp_data_url = "https://api.coingecko.com/api/v3/coins/smooth-love-potion/market_chart?vs_currency=usd&days=1"
     slp_data_response = requests.get(slp_data_url)
     slp_data_json = slp_data_response.json()
-    slp_chart_data = slp_data_json['prices']
-    return slp_chart_data
+    return slp_data_json['prices']
 
 def axie_infinity_chart_data_fun():
     axie_infinity_data_url = "https://api.coingecko.com/api/v3/coins/axie-infinity/market_chart?vs_currency=usd&days=1"
     axie_infinity_data_response = requests.get(axie_infinity_data_url)
     axie_infinity_data_json = axie_infinity_data_response.json()
-    axie_infinity_chart_data = axie_infinity_data_json['prices']
-    return axie_infinity_chart_data
+    return axie_infinity_data_json['prices']
 
 def get_slp_rapid():
     ronin_id = "0x"+user_ronin_id
@@ -96,8 +89,7 @@ def slp_and_axie_infinity_price():
     response = requests.get(url)
     re = response.json()
     slp_token = re['smooth-love-potion']
-    slp_token_price = slp_token['usd']
-    return slp_token_price
+    return slp_token['usd']
 
 def slp_price_to_usd():
     price_slp = slp_and_axie_infinity_price()
@@ -110,8 +102,7 @@ def slp_price_to_usd():
 def scholar_data_view():
     file = open('scholar.json',)
     data = json.load(file)
-    scholars = data['scholars']
-    return scholars
+    return data['scholars']
 
 
 
@@ -242,28 +233,25 @@ def download():
 
     employee_data = data['scholars']
 
-    # now we will open a file for writing
-    data_file = open('data_file.csv', 'w')
+    with open('data_file.csv', 'w') as data_file:
+        # create the csv writer object
+        csv_writer = csv.writer(data_file)
 
-    # create the csv writer object
-    csv_writer = csv.writer(data_file)
+        # Counter variable used for writing
+        # headers to the CSV file
+        count = 0
 
-    # Counter variable used for writing
-    # headers to the CSV file
-    count = 0
+        for emp in employee_data:
+            if count == 0:
 
-    for emp in employee_data:
-        if count == 0:
+                # Writing headers of CSV file
+                header = emp.keys()
+                csv_writer.writerow(header)
+                count += 1
 
-            # Writing headers of CSV file
-            header = emp.keys()
-            csv_writer.writerow(header)
-            count += 1
+            # Writing data of CSV file
+            csv_writer.writerow(emp.values())
 
-        # Writing data of CSV file
-        csv_writer.writerow(emp.values())
-
-    data_file.close()
     b = "data_file.csv"
 
     return send_file(b)

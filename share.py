@@ -11,11 +11,10 @@ def get_slp_rapid():
     results = response
     re = results.json()
     b = re['slp']
-    total_slp = str(b['total'])
     # average_slp = b['average']
     # game_slp = b['claimableTotal']
     # print(re)
-    return total_slp
+    return str(b['total'])
 a = get_slp_rapid()
 print(a)
     
